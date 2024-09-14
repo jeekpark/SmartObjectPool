@@ -35,8 +35,8 @@ public:
     }
 
     Pool(const Pool&) = delete;
-    Pool& operator=(const Pool&) = delete;
     Pool(Pool&&) = delete;
+    Pool& operator=(const Pool&) = delete;
     Pool& operator=(Pool&&) = delete;
     Pool& operator=(std::initializer_list<T>) = delete;
     Pool& operator=(std::array<T, N>) = delete;
@@ -87,15 +87,6 @@ public:
         return N - mLeftObjectCount;
     }
 
-    /*std::array<T, N>::const_iterator begin() const noexcept
-    {
-        return mArr.cbegin();
-    }
-
-    std::array<T, N>::const_iterator end() const noexcept
-    {
-        return mArr.cend();
-    }*/
 private:
     size_t mLeftObjectCount;
     std::array<T, N> mArr;
