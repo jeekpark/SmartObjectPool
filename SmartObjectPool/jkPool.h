@@ -4,6 +4,7 @@
 #include <memory>
 #include <bitset>
 #include <stdexcept>
+#include <iterator>
 
 template <typename T, size_t N>
 class Pool
@@ -12,7 +13,7 @@ public:
     template <typename... Args>
     Pool(Args&&... args)
         : mLeftObjectCount(N)
-        , mArr{ std::forward<Args>(args)... }
+        , mArr{ T{ std::forward<Args>(args)... } }
         , mStatus{}
     {
         mStatus.set();
@@ -33,27 +34,12 @@ public:
         mStatus.set();
     }
 
-    Pool(std::initializer_list<T> list)
-        : mLeftObjectCount(N)
-        , mArr{}
-        , mStatus{}
-    {
-        if (list.size() != N)
-        {
-            throw std::invalid_argument("Invalid range");
-        }
-
-        std::copy(list.begin(), list.end(), mArr.begin());
-        mStatus.set();
-    }
-
     Pool(const Pool&) = delete;
     Pool& operator=(const Pool&) = delete;
     Pool(Pool&&) = delete;
     Pool& operator=(Pool&&) = delete;
     Pool& operator=(std::initializer_list<T>) = delete;
     Pool& operator=(std::array<T, N>) = delete;
-    Pool& operator=(const Pool&) = delete;
     
     ~Pool() = default;
 
@@ -101,7 +87,7 @@ public:
         return N - mLeftObjectCount;
     }
 
-    std::array<T, N>::const_iterator begin() const noexcept
+    /*std::array<T, N>::const_iterator begin() const noexcept
     {
         return mArr.cbegin();
     }
@@ -109,7 +95,7 @@ public:
     std::array<T, N>::const_iterator end() const noexcept
     {
         return mArr.cend();
-    }
+    }*/
 private:
     size_t mLeftObjectCount;
     std::array<T, N> mArr;
