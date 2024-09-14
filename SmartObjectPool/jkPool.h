@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <array>
 #include <memory>
 #include <bitset>
@@ -30,13 +29,87 @@ public:
             throw std::invalid_argument("Invalid range");
         }
 
-        for (size_t i = 0; begin != end; ++begin, ++i)
-        {
-            mArr[i] = *begin;
-            mStatus.set(i);
-        }
+        std::move(begin, end, mArr.begin());
+        mStatus.set();
     }
 
+    Pool(std::initializer_list<T> list)
+        : mLeftObjectCount(N)
+        , mArr{}
+        , mStatus{}
+    {
+        if (list.size() != N)
+        {
+            throw std::invalid_argument("Invalid range");
+        }
+
+        std::copy(list.begin(), list.end(), mArr.begin());
+        mStatus.set();
+    }
+
+    Pool(const Pool&) = delete;
+    Pool& operator=(const Pool&) = delete;
+    Pool(Pool&&) = delete;
+    Pool& operator=(Pool&&) = delete;
+    Pool& operator=(std::initializer_list<T>) = delete;
+    Pool& operator=(std::array<T, N>) = delete;
+    Pool& operator=(const Pool&) = delete;
+    
+    ~Pool() = default;
+
+    auto Acquire() noexcept
+    {
+        auto deleter = [this](const T* obj)
+            {
+                if (obj != nullptr)
+                {
+                    mStatus.set(obj -&mArr[0]);
+                    ++mLeftObjectCount;
+                }
+            };
+
+        if (mLeftObjectCount == 0)
+        {
+            return std::unique_ptr<T, decltype(deleter)>(nullptr, deleter);
+        }
+
+        for (size_t i = 0; i < mStatus.size(); ++i)
+        {
+            if (mStatus[i])
+            {
+                mStatus.reset(i);
+                --mLeftObjectCount;
+                return std::unique_ptr<T, decltype(deleter)>(&mArr[i], deleter);
+            }
+        }
+
+        return std::unique_ptr<T, decltype(deleter)>(nullptr, deleter);
+    }
+
+    size_t GetLeftObjectCount() const noexcept
+    {
+        return mLeftObjectCount;
+    }
+
+    size_t GetTotalObjectCount() const noexcept
+    {
+        return N;
+    }
+
+    size_t GetUsedObjectCount() const noexcept
+    {
+        return N - mLeftObjectCount;
+    }
+
+    std::array<T, N>::const_iterator begin() const noexcept
+    {
+        return mArr.cbegin();
+    }
+
+    std::array<T, N>::const_iterator end() const noexcept
+    {
+        return mArr.cend();
+    }
 private:
     size_t mLeftObjectCount;
     std::array<T, N> mArr;
