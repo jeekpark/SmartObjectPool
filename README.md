@@ -28,7 +28,7 @@ else
 
 ## 클래스 가변인자 초기화
 ```cpp
-Pool<Foo, 6> pool{args1, args2}; // 가변 인자
+Pool<Foo, 6> pool{args1, args2}; // Foo의 생성자 인자를 넘김
 ```
 위 코드는 ```Foo```객체를 생성하며 ```Foo```생성자의 인자를 넘겨 오브젝트풀이 객체를 초기화할 수 있도록 합니다.
 
