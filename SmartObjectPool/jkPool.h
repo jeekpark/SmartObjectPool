@@ -34,6 +34,8 @@ public:
         mStatus.set();
     }
 
+    ~Pool() = default;
+
     Pool(const Pool&) = delete;
     Pool(Pool&&) = delete;
     Pool& operator=(const Pool&) = delete;
@@ -41,8 +43,6 @@ public:
     Pool& operator=(std::initializer_list<T>) = delete;
     Pool& operator=(std::array<T, N>) = delete;
     
-    ~Pool() = default;
-
     auto Acquire() noexcept
     {
         auto deleter = [this](const T* obj)
@@ -72,20 +72,7 @@ public:
         return std::unique_ptr<T, decltype(deleter)>(nullptr, deleter);
     }
 
-    size_t GetLeftObjectCount() const noexcept
-    {
-        return mLeftObjectCount;
-    }
-
-    size_t GetTotalObjectCount() const noexcept
-    {
-        return N;
-    }
-
-    size_t GetUsedObjectCount() const noexcept
-    {
-        return N - mLeftObjectCount;
-    }
+    size_t GetLeftObjectCount() const noexcept { return mLeftObjectCount; }
 
 private:
     size_t mLeftObjectCount;
