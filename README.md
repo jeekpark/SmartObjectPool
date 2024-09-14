@@ -4,7 +4,7 @@ C++의 스마트포인터(unique_ptr)을 이용한 오브젝트풀 ```header-onl
 
 # 주요 특징
 - **static**: 정적 오브젝트풀로 설계되어 있어 메모리 할당을 반복(재할당)하지 않습니다. 오브젝트풀의 크기는 초기화시 지정하고, 이후에는 고정되어있어 사용시 유의가 필요합니다.
-- **noexcept**: 모든 함수(API)는 noexcept로 선언되어있습니다. try-catch, throw, exception 구조는 성능저하를 야기함으로 예외상황은 unique_ptr의 nullptr 반환으로 처리되었습니다.
+- **noexcept**: 모든 함수(API)는 noexcept로 선언되어있습니다. try-catch, throw, exception 구조는 성능저하를 야기함으로 예외상황은 unique_ptr의 nullptr 반환으로 처리되었습니다. 단 생성자는 반환값이 없기때문에 예외 throw를 발생시킵니다. 생성자가 작동되는 시점은 게임의 로딩씬과 같이 성능저하/부하가 걸려도 무방한 코드에서 작성하시기를 유의드립니다.
 - **자동반납**: unique_ptr의 커스텀 해제(```deleter```)를 통해 객체의 반환을 자동으로 처리합니다. 따라서 ```Acquire()```함수로 객체를 unique_ptr로 획득 한 후, 객체를 사용하고 반납할 때, unique_ptr에서 해제만 해주면 자동으로 반납이 되어 간결한 사용이 가능합니다.
 
 # 코드설명
