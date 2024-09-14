@@ -11,7 +11,7 @@ C++의 스마트포인터(unique_ptr)을 이용한 오브젝트풀 ```header-onl
 
 ## 기본사용
 ```cpp
-Pool<int, 6> pool;
+Pool<Test, 6> pool;
 auto obj = pool.Acquire();
 if (obj.get() != nullptr)
 {
@@ -24,7 +24,7 @@ else
 }
 
 ```
-위 코드에서는 Pool<int, 6>을 선언하여 크기가 6인 int 오브젝풀이 생성됩니다. ```Acquire()``` 함수는 객체를 획득(풀에서 하나 꺼내오는)하는 역할을 하며, 만약 풀이 비어있으면 unique_ptr은 nullptr을 가진채로 반환합니다.
+위 코드에서는 Pool<Test, 6>을 선언하여 크기가 6인 Test 오브젝풀이 생성됩니다. ```Acquire()``` 함수는 객체를 획득(풀에서 하나 꺼내오는)하는 역할을 하며, 만약 풀이 비어있으면 unique_ptr은 nullptr을 가진채로 반환합니다.
 
 ## 클래스 가변인자 초기화
 ```cpp
