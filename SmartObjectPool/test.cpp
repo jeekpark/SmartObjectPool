@@ -6,11 +6,11 @@ class Test
 {
 public:
     Test() = default;
+
     Test(int a)
         : mValue(a)
     {
     }
-
     ~Test()
     {
     }
