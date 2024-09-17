@@ -40,7 +40,7 @@ int main()
     Pool<TestObject, 3> pool;  // 크기가 3인 풀 생성
 
     // 객체를 풀에서 unique_ptr로 획득
-    auto obj1 = pool.Acquire();
+    unique_ptr<TestObject> obj1 = pool.Acquire();
 
     // 객체 사용
     obj1->SomeFunction();
