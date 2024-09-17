@@ -12,7 +12,7 @@ class Pool
 public:
     template <typename... Args>
     Pool(Args&&... args)
-        : mLeftObjectCount(N)
+        : mAvailableObjectCount(N)
         , mArr{ T{ std::forward<Args>(args)... } }
         , mStatus{}
     {
@@ -21,7 +21,7 @@ public:
 
     template <typename Iterator>
     Pool(Iterator begin, Iterator end)
-        : mLeftObjectCount(N)
+        : mAvailableObjectCount(N)
         , mArr{}
         , mStatus{}
     {
@@ -50,11 +50,11 @@ public:
                 if (obj != nullptr)
                 {
                     mStatus.set(obj -&mArr[0]);
-                    ++mLeftObjectCount;
+                    ++mAvailableObjectCount;
                 }
             };
 
-        if (mLeftObjectCount == 0)
+        if (mAvailableObjectCount == 0)
         {
             return std::unique_ptr<T, decltype(deleter)>(nullptr, deleter);
         }
@@ -64,7 +64,7 @@ public:
             if (mStatus[i])
             {
                 mStatus.reset(i);
-                --mLeftObjectCount;
+                --mAvailableObjectCount;
                 return std::unique_ptr<T, decltype(deleter)>(&mArr[i], deleter);
             }
         }
@@ -72,10 +72,10 @@ public:
         return std::unique_ptr<T, decltype(deleter)>(nullptr, deleter);
     }
 
-    size_t GetLeftObjectCount() const noexcept { return mLeftObjectCount; }
+    size_t GetAvailableObjectCount() const noexcept { return mAvailableObjectCount; }
 
 private:
-    size_t mLeftObjectCount;
+    size_t mAvailableObjectCount;
     std::array<T, N> mArr;
     std::bitset<N> mStatus;
 };
