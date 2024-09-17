@@ -77,7 +77,7 @@ public:
 private:
 
     template<typename T>
-    class AccessibleStack : public std::stack<std::unique_ptr<T>, std::vector<std::unique_ptr<T>>>
+    class ReservableStack : public std::stack<std::unique_ptr<T>, std::vector<std::unique_ptr<T>>>
     {
     public:
         using std::stack<std::unique_ptr<T>, std::vector<std::unique_ptr<T>>>::c;
@@ -86,4 +86,7 @@ private:
     size_t mAvailableObjectCount;
     std::array<T, N> mArr;
     std::bitset<N> mStatus;
+
+    size_t mCapacity;
+    ReservableStack<T> mStack;
 };
