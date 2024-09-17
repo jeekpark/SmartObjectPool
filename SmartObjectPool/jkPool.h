@@ -21,6 +21,12 @@ public:
         }
     }
     
+    Pool(const Pool&) = delete;
+    Pool(Pool&&) = default;
+
+    Pool& operator=(const Pool&) = delete;
+    Pool& operator=(Pool&&) = default;
+
     auto Acquire() noexcept
     {
         auto deleter = [this](T* obj)
