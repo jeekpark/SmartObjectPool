@@ -75,6 +75,14 @@ public:
     size_t GetAvailableObjectCount() const noexcept { return mAvailableObjectCount; }
 
 private:
+
+    template<typename T>
+    class AccessibleStack : public std::stack<std::unique_ptr<T>, std::vector<std::unique_ptr<T>>>
+    {
+    public:
+        using std::stack<std::unique_ptr<T>, std::vector<std::unique_ptr<T>>>::c;
+    };
+
     size_t mAvailableObjectCount;
     std::array<T, N> mArr;
     std::bitset<N> mStatus;
