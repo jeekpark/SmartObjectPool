@@ -12,20 +12,21 @@ public:
     template <typename... Args>
     Pool(Args&&... args)
     {
-        mStack.reserve(PoolSize);
+        mAvailableObjects.reserve(PoolSize);
         for (size_t i = 0; i < PoolSize; ++i)
         {
             auto obj = std::make_unique<T>(std::forward<Args>(args)...);
-            mStack.push(obj.get());
-            mPointersToDelete.push_back(std::move(obj));
+            mAvailableObjects.push(obj.get());
+            mPoolStorage.push_back(std::move(obj));
         }
     }
+
+    Pool(Pool&&) = default;
+    Pool& operator=(Pool&&) = default;
     
     Pool(const Pool&) = delete;
-    Pool(Pool&&) = default;
-
     Pool& operator=(const Pool&) = delete;
-    Pool& operator=(Pool&&) = default;
+    
 
     auto Acquire() noexcept
     {
@@ -33,21 +34,21 @@ public:
             {
                 if (obj != nullptr)
                 {
-                    mStack.push(obj);
+                    mAvailableObjects.push(obj);
                 }
             };
 
-        if (mStack.empty())
+        if (mAvailableObjects.empty())
         {
             return std::unique_ptr<T, decltype(deleter)>(nullptr, deleter);
         }
 
-        T* obj = mStack.top();
-        mStack.pop();
+        T* obj = mAvailableObjects.top();
+        mAvailableObjects.pop();
         return std::unique_ptr<T, decltype(deleter)>(obj, deleter);
     }
 
-    size_t GetAvailableObjectCount() const noexcept { return mStack.size(); }
+    size_t GetAvailableObjectCount() const noexcept { return mAvailableObjects.size(); }
 
 private:
 
@@ -61,6 +62,6 @@ private:
         bool empty() const { return this->c.empty(); }
     };
 
-    ReservableStack<T*> mStack;
-    std::vector<std::unique_ptr<T>> mPointersToDelete;
+    ReservableStack<T*> mAvailableObjects;
+    std::vector<std::unique_ptr<T>> mPoolStorage;
 };
