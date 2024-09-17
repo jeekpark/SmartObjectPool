@@ -1,92 +1,60 @@
 #pragma once
 
-#include <array>
 #include <memory>
-#include <bitset>
 #include <stdexcept>
-#include <iterator>
+#include <stack>
+#include <vector>
 
-template <typename T, size_t N>
+template <typename T, size_t PoolSize>
 class Pool
 {
 public:
     template <typename... Args>
     Pool(Args&&... args)
-        : mAvailableObjectCount(N)
-        , mArr{ T{ std::forward<Args>(args)... } }
-        , mStatus{}
     {
-        mStatus.set();
-    }
-
-    template <typename Iterator>
-    Pool(Iterator begin, Iterator end)
-        : mAvailableObjectCount(N)
-        , mArr{}
-        , mStatus{}
-    {
-        if (std::distance(begin, end) != N)
+        mStack.reserve(PoolSize);
+        for (size_t i = 0; i < PoolSize; ++i)
         {
-            throw std::invalid_argument("Invalid range");
+            auto obj = std::make_unique<T>(std::forward<Args>(args)...);
+            mStack.push(obj.get());
+            mPointersToDelete.push_back(std::move(obj));
         }
-
-        std::move(begin, end, mArr.begin());
-        mStatus.set();
     }
-
-    ~Pool() = default;
-
-    Pool(const Pool&) = delete;
-    Pool(Pool&&) = delete;
-    Pool& operator=(const Pool&) = delete;
-    Pool& operator=(Pool&&) = delete;
-    Pool& operator=(std::initializer_list<T>) = delete;
-    Pool& operator=(std::array<T, N>) = delete;
     
     auto Acquire() noexcept
     {
-        auto deleter = [this](const T* obj)
+        auto deleter = [this](T* obj)
             {
                 if (obj != nullptr)
                 {
-                    mStatus.set(obj -&mArr[0]);
-                    ++mAvailableObjectCount;
+                    mStack.push(obj);
                 }
             };
 
-        if (mAvailableObjectCount == 0)
+        if (mStack.empty())
         {
             return std::unique_ptr<T, decltype(deleter)>(nullptr, deleter);
         }
 
-        for (size_t i = 0; i < mStatus.size(); ++i)
-        {
-            if (mStatus[i])
-            {
-                mStatus.reset(i);
-                --mAvailableObjectCount;
-                return std::unique_ptr<T, decltype(deleter)>(&mArr[i], deleter);
-            }
-        }
-
-        return std::unique_ptr<T, decltype(deleter)>(nullptr, deleter);
+        T* obj = mStack.top();
+        mStack.pop();
+        return std::unique_ptr<T, decltype(deleter)>(obj, deleter);
     }
 
-    size_t GetAvailableObjectCount() const noexcept { return mAvailableObjectCount; }
+    size_t GetAvailableObjectCount() const noexcept { return mStack.size(); }
 
 private:
 
     template<typename T>
-    class ReservableStack : public std::stack<std::unique_ptr<T>, std::vector<std::unique_ptr<T>>>
+    class ReservableStack : public std::stack<T, std::vector<T>>
     {
     public:
-        using std::stack<std::unique_ptr<T>, std::vector<std::unique_ptr<T>>>::c;
+        void reserve(size_t n) { this->c.reserve(n); }
+        size_t capacity() const { return this->c.capacity(); }
+        size_t size() const { return this->c.size(); }
+        bool empty() const { return this->c.empty(); }
     };
 
-    size_t mAvailableObjectCount;
-    std::array<T, N> mArr;
-    std::bitset<N> mStatus;
-
-    size_t mCapacity;
-    ReservableStack<T> mStack;
+    ReservableStack<T*> mStack;
+    std::vector<std::unique_ptr<T>> mPointersToDelete;
 };
