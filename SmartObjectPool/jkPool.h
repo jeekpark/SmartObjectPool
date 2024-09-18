@@ -18,14 +18,14 @@ public:
         {
             T* obj = new T(args...);
             mAvailableObjects.push(obj);
-            mAllPointersForDeletion.push_back(obj);
+            mAllPointers.push_back(obj);
         }
     }
 
     ~Pool()
     {
         assert(mAvailableObjects.size() == PoolSize /* Unreleased objects exist */);
-        for (auto obj : mAllPointersForDeletion)
+        for (auto obj : mAllPointers)
         {
             delete obj;
         }
@@ -67,9 +67,8 @@ private:
     {
     public:
         void reserve(size_t n) { this->c.reserve(n); }
-        size_t size() const { return this->c.size(); }
     };
 
     ReservableStack<T*> mAvailableObjects;
-    std::vector<T*> mAllPointersForDeletion;
+    std::vector<T*> mAllPointers;
 };
