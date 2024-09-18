@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <stack>
 #include <vector>
+#include <cassert>
 
 template <typename T, size_t PoolSize>
 class Pool
@@ -23,6 +24,7 @@ public:
 
     ~Pool()
     {
+        assert(mAvailableObjects.size() == PoolSize);
         for (auto obj : mAllPointersForDeletion)
         {
             delete obj;
