@@ -31,6 +31,7 @@ int main()
     std::cout << "Pool Left Object: " << pool.GetAvailableObjectCount() << std::endl << std::endl;
 
     auto obj = pool.Acquire();
+    //std::unique_ptr<Test> obj = pool.Acquire();
     std::cout << "obj acquired" << std::endl;
     std::cout << "Pool Left Object: " << pool.GetAvailableObjectCount() << std::endl << std::endl;
 

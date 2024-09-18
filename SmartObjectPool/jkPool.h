@@ -15,9 +15,17 @@ public:
         mAvailableObjects.reserve(PoolSize);
         for (size_t i = 0; i < PoolSize; ++i)
         {
-            auto obj = std::make_unique<T>(std::forward<Args>(args)...);
-            mAvailableObjects.push(obj.get());
-            mPoolStorage.push_back(std::move(obj));
+            T* obj = new T(args...);
+            mAvailableObjects.push(obj);
+            mAllPointersForDeletion.push_back(obj);
+        }
+    }
+
+    ~Pool()
+    {
+        for (auto obj : mAllPointersForDeletion)
+        {
+            delete obj;
         }
     }
 
@@ -38,7 +46,7 @@ public:
                 }
             };
 
-        if (mAvailableObjects.empty())
+        if (mAvailableObjects.size() == 0)
         {
             return std::unique_ptr<T, decltype(deleter)>(nullptr, deleter);
         }
@@ -57,11 +65,9 @@ private:
     {
     public:
         void reserve(size_t n) { this->c.reserve(n); }
-        size_t capacity() const { return this->c.capacity(); }
         size_t size() const { return this->c.size(); }
-        bool empty() const { return this->c.empty(); }
     };
 
     ReservableStack<T*> mAvailableObjects;
-    std::vector<std::unique_ptr<T>> mPoolStorage;
+    std::vector<T*> mAllPointersForDeletion;
 };
