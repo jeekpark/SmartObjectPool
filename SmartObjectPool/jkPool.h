@@ -24,7 +24,7 @@ public:
 
     ~Pool()
     {
-        assert(mAvailableObjects.size() == PoolSize);
+        assert(mAvailableObjects.size() == PoolSize /* Unreleased objects exist */);
         for (auto obj : mAllPointersForDeletion)
         {
             delete obj;
